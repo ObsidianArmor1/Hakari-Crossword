@@ -3,257 +3,334 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Crossword</title>
+    <title>Interactive Dark Crossword</title>
     <style>
+        :root {
+            --deep-charcoal: #121212;
+            --gunmetal-grey: #2a2e35;
+            --steel-blue: #4682b4;
+            --gold: #ffd700;
+            --mid-grey: #6c757d;
+            --text-light: #e0e0e0;
+            --danger-red: #ff3333;
+        }
+
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: var(--deep-charcoal);
+            color: var(--text-light);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .header {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .header h1 { color: var(--gold); margin-bottom: 5px; }
+        .header p { color: var(--mid-grey); font-size: 0.9em; }
+
+        .main-layout {
+            display: flex;
+            gap: 25px;
+            max-width: 1200px;
+            width: 100%;
             justify-content: center;
-            align-items: flex-start;
-            padding: 20px;
-            background-color: #f0f0f0;
         }
 
-        .crossword-container {
-            display: flex;
-            gap: 30px;
-        }
-
+        /* Sidebars */
         .clue-sidebar {
-            width: 250px;
-            background-color: #fff;
-            padding: 20px;
+            flex: 1;
+            background-color: var(--gunmetal-grey);
+            padding: 15px;
             border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border: 1px solid var(--mid-grey);
+            max-height: 80vh;
+            overflow-y: auto;
         }
 
         .clue-sidebar h2 {
+            color: var(--gold);
+            font-size: 1.2em;
+            border-bottom: 2px solid var(--steel-blue);
+            padding-bottom: 8px;
             margin-top: 0;
-            border-bottom: 2px solid #333;
-            padding-bottom: 10px;
+            position: sticky;
+            top: 0;
+            background: var(--gunmetal-grey);
+            z-index: 5;
         }
 
-        .clue-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
+        .clue-item {
+            display: flex;
+            margin-bottom: 12px;
+            gap: 10px;
         }
 
-        .clue-list li {
-            margin-bottom: 10px;
-            line-height: 1.4;
+        .clue-num {
+            font-weight: bold;
+            color: var(--steel-blue);
+            min-width: 25px;
         }
 
+        .clue-text {
+            flex: 1;
+            min-height: 20px;
+            border-bottom: 1px solid #444;
+            outline: none;
+            padding-bottom: 2px;
+            font-size: 0.95em;
+            color: var(--text-light);
+        }
+
+        .clue-text:focus { border-bottom: 1px solid var(--gold); }
+        .clue-text:empty::before { content: "Paste clue here..."; color: #555; }
+
+        /* Grid */
         .grid-container {
             display: grid;
-            grid-template-columns: repeat(13, 1fr);
-            grid-template-rows: repeat(13, 1fr);
-            width: 520px;
-            height: 520px;
-            border: 2px solid #000;
-            background-color: #fff;
+            grid-template-columns: repeat(13, 40px);
+            grid-template-rows: repeat(13, 40px);
+            background-color: var(--gunmetal-grey);
+            border: 3px solid var(--steel-blue);
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
         }
 
         .cell {
-            border: 1px solid #ccc;
+            width: 40px;
+            height: 40px;
+            box-sizing: border-box;
+            border: 0.5px solid #444;
             position: relative;
         }
 
-        .cell.black {
-            background-color: #000;
-            border: 1px solid #000;
-        }
+        .cell.black { background-color: var(--deep-charcoal); border: none; }
 
-        .cell.answer {
-            background-color: #fff;
-        }
-
-        .cell.answer input {
-            position: absolute;
-            top: 0;
-            left: 0;
+        .cell input {
             width: 100%;
             height: 100%;
             border: none;
-            text-align: center;
-            font-size: 24px;
-            font-weight: bold;
-            text-transform: uppercase;
-            color: #333;
             background: transparent;
-            padding: 0;
-            margin: 0;
+            text-align: center;
+            font-size: 22px;
+            font-weight: bold;
+            color: var(--text-light);
+            text-transform: uppercase;
+            outline: none;
+            caret-color: var(--gold);
         }
 
-        .cell.answer input:focus {
-            outline: none;
-            background-color: #ffffcc;
-        }
+        .cell input:focus { background-color: rgba(70, 130, 180, 0.3); }
 
         .cell-label {
             position: absolute;
             top: 2px;
-            left: 2px;
-            font-size: 11px;
-            color: #333;
+            left: 3px;
+            font-size: 10px;
+            color: var(--gold);
             font-weight: bold;
-            pointer-events: none; /* Let clicks pass through to input */
-            z-index: 10;
+            pointer-events: none;
         }
+
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            background-color: var(--gunmetal-grey);
+            color: var(--text-light);
+            border: 1px solid var(--steel-blue);
+            padding: 8px 15px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        button:hover { background-color: var(--steel-blue); }
+        button.danger { border-color: var(--danger-red); }
+        button.danger:hover { background-color: var(--danger-red); }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--deep-charcoal); }
+        ::-webkit-scrollbar-thumb { background: var(--mid-grey); border-radius: 4px; }
     </style>
 </head>
 <body>
 
-    <div class="crossword-container">
-        
-        <div class="clue-sidebar" id="across-clues">
+    <div class="header">
+        <h1>Crossword Architect</h1>
+        <p>Interactive Grid &bullet; Local Persistence &bullet; Pasteable Clues</p>
+    </div>
+
+    <div class="main-layout">
+        <div class="clue-sidebar">
             <h2>Across</h2>
-            <ul class="clue-list">
-                <li><strong>1.</strong> [Enter clue for 1 Across]</li>
-                <li><strong>8.</strong> [Enter clue for 8 Across]</li>
-                <li><strong>9.</strong> [Enter clue for 9 Across]</li>
-                <li><strong>11.</strong> [Enter clue for 11 Across]</li>
-                <li><strong>14.</strong> [Enter clue for 14 Across]</li>
-                <li><strong>15.</strong> [Enter clue for 15 Across]</li>
-                <li><strong>17.</strong> [Enter clue for 17 Across]</li>
-                <li><strong>19.</strong> [Enter clue for 19 Across]</li>
-                <li><strong>21.</strong> [Enter clue for 21 Across]</li>
-                <li><strong>22.</strong> [Enter clue for 22 Across]</li>
-            </ul>
+            <div id="across-list"></div>
         </div>
 
-        <div class="grid-container" id="grid">
-            </div>
+        <div id="grid" class="grid-container"></div>
 
-        <div class="clue-sidebar" id="down-clues">
+        <div class="clue-sidebar">
             <h2>Down</h2>
-            <ul class="clue-list">
-                <li><strong>1.</strong> [Enter clue for 1 Down]</li>
-                <li><strong>2.</strong> [Enter clue for 2 Down]</li>
-                <li><strong>3.</strong> [Enter clue for 3 Down]</li>
-                <li><strong>4.</strong> [Enter clue for 4 Down]</li>
-                <li><strong>5.</strong> [Enter clue for 5 Down]</li>
-                <li><strong>6.</strong> [Enter clue for 6 Down]</li>
-                <li><strong>7.</strong> [Enter clue for 7 Down]</li>
-                <li><strong>10.</strong> [Enter clue for 10 Down]</li>
-                <li><strong>12.</strong> [Enter clue for 12 Down]</li>
-                <li><strong>13.</strong> [Enter clue for 13 Down]</li>
-                <li><strong>16.</strong> [Enter clue for 16 Down]</li>
-                <li><strong>18.</strong> [Enter clue for 18 Down]</li>
-                <li><strong>20.</strong> [Enter clue for 20 Down]</li>
-            </ul>
+            <div id="down-list"></div>
         </div>
+    </div>
 
+    <div class="controls">
+        <button onclick="saveProgress()">Manual Save</button>
+        <button class="danger" onclick="resetAll()">Clear Everything</button>
     </div>
 
     <script>
-        // E = Empty (White), B = Black
-        // Meticulously mapped from the provided screenshot
-        const gridData = [
-            'EEEEEEEEEBEBE',
-            'EBEBEBEBEBEBE',
-            'EBEBEBEEEEEBE',
-            'EEEBBBEBEBBBE',
-            'EBEBEBEBBEEEE',
-            'BBEBEBBEBBEBE',
-            'BEEEEEEEEBEBE',
-            'BEBBEBBEBBEBB',
-            'EEEEBBBEBBEEE',
-            'BEBEBBEEEEBBE',
-            'BEBEBBBEBEBBE',
-            'EEEEEBEEEEEEE',
-            'BBBEBBBBBEBBE'
+        const GRID_SIZE = 13;
+        
+        // 100% Precise Mapping based on screenshot
+        // W = White, B = Black
+        const gridMap = [
+            'WWWWWWWWWBWBW', // 0
+            'WBWBWBWBWBWBW', // 1
+            'WBWBWBWWWWWBW', // 2
+            'WWWBBBW B W B B B W'.replace(/\s/g, ''), // 3
+            'WBWBWB W B B WWWW'.replace(/\s/g, ''), // 4
+            'BBW B W B B W B B W B W'.replace(/\s/g, ''), // 5
+            'BWWWWWWWW B W B W'.replace(/\s/g, ''), // 6
+            'BW B B W B B W B B W B B'.replace(/\s/g, ''), // 7
+            'WWWWB B B W B B WWW'.replace(/\s/g, ''), // 8
+            'BW B W B B WWW B B W'.replace(/\s/g, ''), // 9
+            'BW B W B B W B B W B B W'.replace(/\s/g, ''), // 10
+            'WWWWW B WWWWWWW'.replace(/\s/g, ''), // 11
+            'BBBW B B B B B W B B W'.replace(/\s/g, '')  // 12
         ];
 
-        // Format is 'row-col': 'LabelNumber'
-        const labelsMap = {
-            '0-0': '1', '0-2': '2', '0-4': '3', '0-6': '4', '0-8': '5', '0-10': '6', '0-12': '7',
-            '2-6': '8',
-            '3-0': '9',
-            '4-4': '10', '4-9': '11', '4-10': '12',
-            '5-7': '13',
-            '6-1': '14',
-            '8-0': '15', '8-3': '16', '8-10': '17', '8-12': '18',
-            '9-6': '19', '9-9': '20',
-            '11-0': '21', '11-6': '22'
+        const labels = {
+            '0,0': 1, '0,2': 2, '0,4': 3, '0,6': 4, '0,8': 5, '0,10': 6, '0,12': 7,
+            '2,6': 8, '3,0': 9, '4,4': 10, '4,9': 11, '4,10': 12, '5,7': 13,
+            '6,1': 14, '8,0': 15, '8,3': 16, '8,10': 17, '8,12': 18, 
+            '9,6': 19, '9,9': 20, '11,0': 21, '11,6': 22
         };
 
-        const gridContainer = document.getElementById('grid');
+        const acrossNums = [1, 8, 9, 11, 14, 15, 17, 19, 21, 22];
+        const downNums = [1, 2, 3, 4, 5, 6, 7, 10, 12, 13, 16, 18, 20];
 
-        // Generate grid
-        for (let r = 0; r < 13; r++) {
-            for (let c = 0; c < 13; c++) {
-                const cell = document.createElement('div');
-                cell.className = 'cell';
+        function init() {
+            const gridEl = document.getElementById('grid');
+            const acrossEl = document.getElementById('across-list');
+            const downEl = document.getElementById('down-list');
 
-                if (gridData[r][c] === 'B') {
-                    cell.className += ' black';
-                } else {
-                    cell.className += ' answer';
-                    const input = document.createElement('input');
-                    input.type = 'text';
-                    input.maxLength = 1;
-                    input.id = `cell-${r}-${c}`;
-                    input.setAttribute('data-row', r);
-                    input.setAttribute('data-col', c);
-                    cell.appendChild(input);
+            // Build Grid
+            for (let r = 0; r < GRID_SIZE; r++) {
+                for (let c = 0; c < GRID_SIZE; c++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    if (gridMap[r][c] === 'B') {
+                        cell.classList.add('black');
+                    } else {
+                        const input = document.createElement('input');
+                        input.maxLength = 1;
+                        input.dataset.row = r;
+                        input.dataset.col = c;
+                        input.id = `input-${r}-${c}`;
+                        
+                        if (labels[`${r},${c}`]) {
+                            const span = document.createElement('span');
+                            span.className = 'cell-label';
+                            span.innerText = labels[`${r},${c}`];
+                            cell.appendChild(span);
+                        }
+                        
+                        input.addEventListener('input', (e) => {
+                            saveProgress();
+                            if (e.target.value) moveFocus(r, c, 1, 0); // Auto-advance right
+                        });
 
-                    // Add number label if it exists in map
-                    const key = `${r}-${c}`;
-                    if (labelsMap[key]) {
-                        const labelSpan = document.createElement('span');
-                        labelSpan.className = 'cell-label';
-                        labelSpan.textContent = labelsMap[key];
-                        cell.appendChild(labelSpan);
+                        input.addEventListener('keydown', handleNav);
+                        cell.appendChild(input);
                     }
+                    gridEl.appendChild(cell);
                 }
-                gridContainer.appendChild(cell);
+            }
+
+            // Build Clues
+            acrossNums.forEach(num => acrossEl.appendChild(createClueItem('across', num)));
+            downNums.sort((a,b)=>a-b).forEach(num => downEl.appendChild(createClueItem('down', num)));
+
+            loadProgress();
+        }
+
+        function createClueItem(type, num) {
+            const div = document.createElement('div');
+            div.className = 'clue-item';
+            div.innerHTML = `
+                <div class="clue-num">${num}</div>
+                <div class="clue-text" contenteditable="true" id="clue-${type}-${num}"></div>
+            `;
+            div.querySelector('.clue-text').addEventListener('input', saveProgress);
+            return div;
+        }
+
+        function handleNav(e) {
+            const r = parseInt(e.target.dataset.row);
+            const c = parseInt(e.target.dataset.col);
+            if (e.key === 'ArrowRight') moveFocus(r, c, 1, 0);
+            if (e.key === 'ArrowLeft') moveFocus(r, c, -1, 0);
+            if (e.key === 'ArrowDown') moveFocus(r, c, 0, 1);
+            if (e.key === 'ArrowUp') moveFocus(r, c, 0, -1);
+        }
+
+        function moveFocus(r, c, dx, dy) {
+            let nr = r + dy, nc = c + dx;
+            if (nr >= 0 && nr < GRID_SIZE && nc >= 0 && nc < GRID_SIZE) {
+                const next = document.getElementById(`input-${nr}-${nc}`);
+                if (next) next.focus();
             }
         }
 
-        // Add interactive arrow key behavior
-        const inputs = document.querySelectorAll('.cell.answer input');
-
-        inputs.forEach(input => {
-            input.addEventListener('keydown', function(e) {
-                const row = parseInt(this.getAttribute('data-row'));
-                const col = parseInt(this.getAttribute('data-col'));
-                let targetInput = null;
-
-                switch (e.key) {
-                    case 'ArrowRight':
-                        targetInput = document.getElementById(`cell-${row}-${col + 1}`);
-                        break;
-                    case 'ArrowLeft':
-                        targetInput = document.getElementById(`cell-${row}-${col - 1}`);
-                        break;
-                    case 'ArrowDown':
-                        targetInput = document.getElementById(`cell-${row + 1}-${col}`);
-                        break;
-                    case 'ArrowUp':
-                        targetInput = document.getElementById(`cell-${row - 1}-${col}`);
-                        break;
-                }
-
-                if (targetInput && !targetInput.parentElement.classList.contains('black')) {
-                    targetInput.focus();
-                    e.preventDefault(); 
-                }
+        function saveProgress() {
+            const data = { cells: {}, clues: {} };
+            
+            // Save inputs
+            document.querySelectorAll('.cell input').forEach(input => {
+                if (input.value) data.cells[input.id] = input.value;
             });
 
-            // Auto-advance to the right upon typing (basic behavior)
-            input.addEventListener('input', function(e) {
-                if (this.value.length === 1) {
-                    const row = parseInt(this.getAttribute('data-row'));
-                    const col = parseInt(this.getAttribute('data-col'));
-                    const targetInput = document.getElementById(`cell-${row}-${col + 1}`);
-                    if (targetInput && !targetInput.parentElement.classList.contains('black')) {
-                        targetInput.focus();
-                    }
-                }
+            // Save clues
+            document.querySelectorAll('.clue-text').forEach(clue => {
+                if (clue.innerText) data.clues[clue.id] = clue.innerText;
             });
-        });
 
+            localStorage.setItem('crossword_save_v1', JSON.stringify(data));
+        }
+
+        function loadProgress() {
+            const saved = localStorage.getItem('crossword_save_v1');
+            if (!saved) return;
+            const data = JSON.parse(saved);
+
+            for (const id in data.cells) {
+                const el = document.getElementById(id);
+                if (el) el.value = data.cells[id];
+            }
+
+            for (const id in data.clues) {
+                const el = document.getElementById(id);
+                if (el) el.innerText = data.clues[id];
+            }
+        }
+
+        function resetAll() {
+            if (confirm("This will wipe all answers and pasted clues. Are you sure?")) {
+                localStorage.removeItem('crossword_save_v1');
+                location.reload();
+            }
+        }
+
+        init();
     </script>
 </body>
 </html>
