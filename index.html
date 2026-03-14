@@ -81,6 +81,8 @@
             text-transform: uppercase;
             color: #333;
             background: transparent;
+            padding: 0;
+            margin: 0;
         }
 
         .cell.answer input:focus {
@@ -92,10 +94,11 @@
             position: absolute;
             top: 2px;
             left: 2px;
-            font-size: 10px;
+            font-size: 11px;
             color: #333;
             font-weight: bold;
             pointer-events: none; /* Let clicks pass through to input */
+            z-index: 10;
         }
     </style>
 </head>
@@ -107,7 +110,6 @@
             <h2>Across</h2>
             <ul class="clue-list">
                 <li><strong>1.</strong> [Enter clue for 1 Across]</li>
-                <li><strong>6.</strong> [Enter clue for 6 Across]</li>
                 <li><strong>8.</strong> [Enter clue for 8 Across]</li>
                 <li><strong>9.</strong> [Enter clue for 9 Across]</li>
                 <li><strong>11.</strong> [Enter clue for 11 Across]</li>
@@ -127,8 +129,13 @@
             <h2>Down</h2>
             <ul class="clue-list">
                 <li><strong>1.</strong> [Enter clue for 1 Down]</li>
+                <li><strong>2.</strong> [Enter clue for 2 Down]</li>
+                <li><strong>3.</strong> [Enter clue for 3 Down]</li>
+                <li><strong>4.</strong> [Enter clue for 4 Down]</li>
+                <li><strong>5.</strong> [Enter clue for 5 Down]</li>
                 <li><strong>6.</strong> [Enter clue for 6 Down]</li>
                 <li><strong>7.</strong> [Enter clue for 7 Down]</li>
+                <li><strong>10.</strong> [Enter clue for 10 Down]</li>
                 <li><strong>12.</strong> [Enter clue for 12 Down]</li>
                 <li><strong>13.</strong> [Enter clue for 13 Down]</li>
                 <li><strong>16.</strong> [Enter clue for 16 Down]</li>
@@ -140,34 +147,35 @@
     </div>
 
     <script>
+        // E = Empty (White), B = Black
+        // Meticulously mapped from the provided screenshot
         const gridData = [
-            'EEEEEEEEEBBEEBB',
-            'EBEBEBBBBBEBBE',
-            'EBEEEBBBBEEEBE',
-            'EBEBEBBBB EBEBE',
-            'BBEEBBE BBEBEEE',
-            'BBBBBE B BBBEBB',
-            'BEEEEEEEBB EB E',
-            'BEBBBBBEBB E BE',
-            'EEE EBBEE EB BEE',
-            'BE BEBBE BBB BBE',
-            'BE BEBBE E EEBB E',
-            'BB B EB BBBBBE BBB',
-            'EEE E EBEEEEEEE'
+            'EEEEEEEEEBEBE',
+            'EBEBEBEBEBEBE',
+            'EBEBEBEEEEEBE',
+            'EEEBBBEBEBBBE',
+            'EBEBEBEBBEEEE',
+            'BBEBEBBEBBEBE',
+            'BEEEEEEEEBEBE',
+            'BEBBEBBEBBEBB',
+            'EEEEBBBEBBEEE',
+            'BEBEBBEEEEBBE',
+            'BEBEBBBEBEBBE',
+            'EEEEEBEEEEEEE',
+            'BBBEBBBBBEBBE'
         ];
 
-        // Ensure gridData rows are trimmed and of correct length
-        const cleanedGridData = gridData.map(row => row.replace(/\s+/g, '').padEnd(13, 'B').substring(0,13));
-
+        // Format is 'row-col': 'LabelNumber'
         const labelsMap = {
-            '0-0': '1', '0-10': '6', '0-12': '7',
-            '2-8': '8',
+            '0-0': '1', '0-2': '2', '0-4': '3', '0-6': '4', '0-8': '5', '0-10': '6', '0-12': '7',
+            '2-6': '8',
             '3-0': '9',
-            '4-5': '10', '4-10': '11',
-            '6-1': '14', '6-10': '12',
-            '8-0': '15', '8-2': '16', '8-6': '13', '8-11': '17', '8-12': '18',
-            '10-6': '19', '10-9': '20',
-            '12-0': '21', '12-6': '22'
+            '4-4': '10', '4-9': '11', '4-10': '12',
+            '5-7': '13',
+            '6-1': '14',
+            '8-0': '15', '8-3': '16', '8-10': '17', '8-12': '18',
+            '9-6': '19', '9-9': '20',
+            '11-0': '21', '11-6': '22'
         };
 
         const gridContainer = document.getElementById('grid');
@@ -178,7 +186,7 @@
                 const cell = document.createElement('div');
                 cell.className = 'cell';
 
-                if (cleanedGridData[r][c] === 'B') {
+                if (gridData[r][c] === 'B') {
                     cell.className += ' black';
                 } else {
                     cell.className += ' answer';
@@ -203,52 +211,10 @@
             }
         }
 
-        // Add interactive behavior
+        // Add interactive arrow key behavior
         const inputs = document.querySelectorAll('.cell.answer input');
 
         inputs.forEach(input => {
-            input.addEventListener('input', function(e) {
-                if (this.value.length === 1) {
-                    const row = parseInt(this.getAttribute('data-row'));
-                    const col = parseInt(this.getAttribute('data-col'));
-                    
-                    // Automatically move to the next logical input
-                    // We'll prioritize across direction by default. This is a simplification.
-                    let nextInput = null;
-
-                    // 1. Try moving right across
-                    let nextCol = col + 1;
-                    while (nextCol < 13 && cleanedGridData[row][nextCol] === 'B') {
-                        nextCol++;
-                    }
-                    if (nextCol < 13) {
-                        nextInput = document.getElementById(`cell-${row}-${nextCol}`);
-                    }
-
-                    // 2. If at the end of a word or row, try the next start of an across word
-                    if (!nextInput) {
-                        let nextRowAcross = row + 1;
-                        let nextColAcross = 0;
-                        while (nextRowAcross < 13) {
-                            while(nextColAcross < 13 && cleanedGridData[nextRowAcross][nextColAcross] === 'B') {
-                                nextColAcross++;
-                            }
-                            if (nextColAcross < 13) {
-                                nextInput = document.getElementById(`cell-${nextRowAcross}-${nextColAcross}`);
-                                break;
-                            }
-                            nextRowAcross++;
-                            nextColAcross = 0;
-                        }
-                    }
-
-                    if (nextInput) {
-                        nextInput.focus();
-                    }
-                }
-            });
-
-            // Arrow key navigation
             input.addEventListener('keydown', function(e) {
                 const row = parseInt(this.getAttribute('data-row'));
                 const col = parseInt(this.getAttribute('data-col'));
@@ -271,7 +237,19 @@
 
                 if (targetInput && !targetInput.parentElement.classList.contains('black')) {
                     targetInput.focus();
-                    e.preventDefault(); // Prevent cursor movement within input
+                    e.preventDefault(); 
+                }
+            });
+
+            // Auto-advance to the right upon typing (basic behavior)
+            input.addEventListener('input', function(e) {
+                if (this.value.length === 1) {
+                    const row = parseInt(this.getAttribute('data-row'));
+                    const col = parseInt(this.getAttribute('data-col'));
+                    const targetInput = document.getElementById(`cell-${row}-${col + 1}`);
+                    if (targetInput && !targetInput.parentElement.classList.contains('black')) {
+                        targetInput.focus();
+                    }
                 }
             });
         });
