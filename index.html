@@ -3,15 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minimalist Dark Crossword</title>
+    <title>Interactive Crossword</title>
     <style>
         :root {
-            --deep-charcoal: #121212;
-            --gunmetal-grey: #2a2e35;
-            --steel-blue: #4682b4; /* Used only once for grid border */
-            --mid-grey: #6c757d;
-            --text-white: #ffffff;
-            --text-dim: #b0b0b0;
+            --bg-gray: #2c2f33; /* Main background */
+            --box-white: #ffffff; /* Clues and squares */
+            --text-dark: #121212; /* Text inside white boxes */
+            --text-dim: #555555; /* Secondary text inside white boxes */
+            --steel-blue: #4682b4; /* Used ONLY for the grid border */
+            --black-square: #121212; 
+            --btn-bg: #2a2e35;
+            --btn-text: #e0e0e0;
             --danger-red: #ff3333;
         }
 
@@ -20,8 +22,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            background-color: var(--deep-charcoal);
-            color: var(--text-white);
+            background-color: var(--bg-gray);
             margin: 0;
             padding: 40px 20px;
         }
@@ -34,28 +35,29 @@
             justify-content: center;
         }
 
-        /* Sidebars */
+        /* Sidebars (White Background) */
         .clue-sidebar {
             flex: 1;
-            background-color: var(--gunmetal-grey);
+            background-color: var(--box-white);
+            color: var(--text-dark);
             padding: 20px;
             border-radius: 4px;
-            border: 1px solid #444;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
             max-height: 85vh;
             overflow-y: auto;
         }
 
         .clue-sidebar h2 {
-            color: var(--text-white);
+            color: var(--text-dark);
             font-size: 1.1em;
             text-transform: uppercase;
             letter-spacing: 1px;
-            border-bottom: 1px solid var(--text-white);
+            border-bottom: 2px solid #ddd;
             padding-bottom: 10px;
             margin-top: 0;
             position: sticky;
             top: 0;
-            background: var(--gunmetal-grey);
+            background: var(--box-white);
             z-index: 5;
         }
 
@@ -67,47 +69,60 @@
 
         .clue-num {
             font-weight: 800;
-            color: var(--text-white);
+            color: var(--text-dark);
             min-width: 25px;
         }
 
         .clue-text {
             flex: 1;
             min-height: 20px;
-            border-bottom: 1px solid #3d424a;
+            border-bottom: 1px solid #eee;
             outline: none;
             padding-bottom: 4px;
             font-size: 0.95em;
-            color: var(--text-dim);
+            color: var(--text-dark);
             line-height: 1.4;
         }
 
         .clue-text:focus { 
-            border-bottom: 1px solid var(--text-white); 
-            color: var(--text-white);
+            border-bottom: 1px solid #999; 
         }
         
-        .clue-text:empty::before { content: "Paste clue..."; opacity: 0.3; }
+        .clue-text:empty::before { 
+            content: "Paste clue..."; 
+            color: var(--text-dim);
+            opacity: 0.6; 
+        }
 
         /* Grid - The "One instance" of blue is here */
         .grid-container {
             display: grid;
             grid-template-columns: repeat(13, 42px);
             grid-template-rows: repeat(13, 42px);
-            background-color: var(--gunmetal-grey);
+            background-color: var(--black-square);
             border: 2px solid var(--steel-blue); 
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            /* Ensure container perfectly wraps the cells */
+            width: fit-content;
+            height: fit-content;
         }
 
         .cell {
             width: 42px;
             height: 42px;
             box-sizing: border-box;
-            border: 1px solid #3d424a;
+            border: 1px solid #444;
             position: relative;
         }
 
-        .cell.black { background-color: #000; border-color: #000; }
+        .cell.black { 
+            background-color: var(--black-square); 
+            border-color: #222; 
+        }
+
+        .cell.answer {
+            background-color: var(--box-white);
+        }
 
         .cell input {
             width: 100%;
@@ -117,26 +132,28 @@
             text-align: center;
             font-size: 24px;
             font-weight: 700;
-            color: var(--text-white);
+            color: var(--text-dark);
             text-transform: uppercase;
             outline: none;
             padding: 0;
             margin: 0;
         }
 
-        .cell input:focus { background-color: rgba(255, 255, 255, 0.1); }
+        .cell input:focus { 
+            background-color: #ffffd0; /* Subtle highlight when typing */
+        }
 
         .cell-label {
             position: absolute;
             top: 2px;
             left: 3px;
-            font-size: 9px;
-            color: var(--text-white);
+            font-size: 10px;
+            color: var(--text-dark);
             font-weight: bold;
             pointer-events: none;
-            opacity: 0.8;
         }
 
+        /* Restored Solid Buttons */
         .controls {
             margin-top: 30px;
             display: flex;
@@ -144,32 +161,32 @@
         }
 
         button {
-            background-color: transparent;
-            color: var(--text-dim);
-            border: 1px solid var(--mid-grey);
-            padding: 8px 20px;
+            background-color: var(--btn-bg);
+            color: var(--btn-text);
+            border: 1px solid #555;
+            padding: 8px 15px;
             cursor: pointer;
-            font-size: 0.8em;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: all 0.2s;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: background-color 0.2s;
         }
 
         button:hover { 
-            background-color: var(--text-white); 
-            color: var(--deep-charcoal);
-            border-color: var(--text-white);
+            background-color: #3f444e; 
+        }
+
+        button.danger { 
+            border-color: var(--danger-red); 
         }
 
         button.danger:hover { 
             background-color: var(--danger-red); 
-            border-color: var(--danger-red);
             color: white;
         }
 
         ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: var(--deep-charcoal); }
-        ::-webkit-scrollbar-thumb { background: #444; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
     </style>
 </head>
 <body>
@@ -195,20 +212,23 @@
 
     <script>
         const GRID_SIZE = 13;
-        const gridMap = [
-            'WWWWWWWWWBWBW',
-            'WBWBWBWBWBWBW',
-            'WBWBWBWWWWWBW',
-            'WWWBBBWBBBBBW',
-            'WBWBWBWBBWWWW',
-            'BBWBWBWBWBBWW',
-            'BWWWWWWWWWBWB',
-            'BWBBWBBWBBWBB',
-            'WWWWB BB W BB WWW'.replace(/\s/g, ''),
-            'BW B W BB WWW BB W'.replace(/\s/g, ''),
-            'BW B W BB W BB W BB W'.replace(/\s/g, ''),
-            'WWWWW B WWWWWWW'.replace(/\s/g, ''),
-            'BBBW B BBBB B W BB W'.replace(/\s/g, '')
+        
+        // E = Empty (White), B = Black
+        // Using the 100% stable array to fix the extra bottom space bug
+        const gridData = [
+            'EEEEEEEEEBEBE',
+            'EBEBEBEBEBEBE',
+            'EBEBEBEEEEEBE',
+            'EEEBBBEBEBBBE',
+            'EBEBEBEBBEEEE',
+            'BBEBEBBEBBEBE',
+            'BEEEEEEEEBEBE',
+            'BEBBEBBEBBEBB',
+            'EEEEBBBEBBEEE',
+            'BEBEBBEEEEBBE',
+            'BEBEBBBEBEBBE',
+            'EEEEEBEEEEEEE',
+            'BBBEBBBBBEBBE'
         ];
 
         const labels = {
@@ -230,9 +250,11 @@
                 for (let c = 0; c < GRID_SIZE; c++) {
                     const cell = document.createElement('div');
                     cell.className = 'cell';
-                    if (gridMap[r][c] === 'B') {
+                    
+                    if (gridData[r][c] === 'B') {
                         cell.classList.add('black');
                     } else {
+                        cell.classList.add('answer');
                         const input = document.createElement('input');
                         input.maxLength = 1;
                         input.dataset.row = r;
@@ -248,7 +270,7 @@
                         
                         input.addEventListener('input', () => {
                             saveProgress();
-                            moveFocus(r, c, 1, 0); 
+                            if(input.value) moveFocus(r, c, 1, 0); // Auto move right
                         });
                         input.addEventListener('keydown', handleNav);
                         cell.appendChild(input);
@@ -298,11 +320,11 @@
             document.querySelectorAll('.clue-text').forEach(clue => {
                 if (clue.innerText) data.clues[clue.id] = clue.innerText;
             });
-            localStorage.setItem('crossword_minimal_v1', JSON.stringify(data));
+            localStorage.setItem('crossword_v3', JSON.stringify(data));
         }
 
         function loadProgress() {
-            const saved = localStorage.getItem('crossword_minimal_v1');
+            const saved = localStorage.getItem('crossword_v3');
             if (!saved) return;
             const data = JSON.parse(saved);
             for (const id in data.cells) {
@@ -317,7 +339,7 @@
 
         function resetAll() {
             if (confirm("Clear all answers and clues?")) {
-                localStorage.removeItem('crossword_minimal_v1');
+                localStorage.removeItem('crossword_v3');
                 location.reload();
             }
         }
