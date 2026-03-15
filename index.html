@@ -6,19 +6,19 @@
     <title>Interactive Crossword</title>
     <style>
         :root {
-            /* Restful, true dark gray background */
-            --bg-gray: #2b2d31; 
-            
-            /* Soft "paper white" to reduce glare */
-            --box-white: #f4f4f5;
+            /* Smooth, cohesive dark theme */
+            --bg-gray: #232428; 
+            --sidebar-bg: #2b2d31;
             
             /* Typography */
-            --text-dark: #18181b; 
-            --text-dim: #71717a;
+            --text-main: #f2f3f5; 
+            --text-muted: #949ba4;
+            --border-subtle: #3f4147;
             
             /* Crossword specific */
+            --box-white: #ffffff;
             --black-square: #000000; 
-            --highlight-yellow: #fef08a; /* Soft yellow for typing focus */
+            --highlight-yellow: #fef08a;
             
             /* Buttons */
             --btn-bg: #1e1e20;
@@ -32,60 +32,62 @@
             flex-direction: column;
             align-items: center;
             background-color: var(--bg-gray);
-            color: var(--text-dark);
+            color: var(--text-main);
             margin: 0;
             padding: 50px 20px;
         }
 
         .main-layout {
             display: flex;
-            gap: 35px;
-            max-width: 1250px;
+            gap: 30px;
+            max-width: 1200px;
             width: 100%;
             justify-content: center;
             align-items: flex-start;
         }
 
-        /* Refined Sidebars */
+        /* Dark Theme Sidebars - No more eye strain */
         .clue-sidebar {
             flex: 1;
-            background-color: var(--box-white);
+            max-width: 350px;
+            background-color: var(--sidebar-bg);
             padding: 25px;
-            border-radius: 8px;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4); /* Stronger shadow to pop off the dark gray */
+            border-radius: 12px;
+            border: 1px solid var(--border-subtle);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2); 
             max-height: 80vh;
             overflow-y: auto;
         }
 
         .clue-sidebar h2 {
-            color: var(--text-dark);
-            font-size: 1.2em;
+            color: var(--text-main);
+            font-size: 1.1em;
             font-weight: 800;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            border-bottom: 2px solid #d4d4d8;
+            letter-spacing: 1.5px;
+            border-bottom: 2px solid var(--border-subtle);
             padding-bottom: 12px;
             margin-top: 0;
             margin-bottom: 20px;
             position: sticky;
             top: 0;
-            background: var(--box-white);
+            background: var(--sidebar-bg);
             z-index: 5;
         }
 
         .clue-item {
             display: flex;
-            margin-bottom: 16px;
+            margin-bottom: 18px;
             gap: 15px;
             align-items: flex-start;
         }
 
         .clue-num {
             font-weight: 700;
-            color: var(--text-dark);
-            min-width: 28px;
+            color: var(--text-main);
+            min-width: 24px;
             text-align: right;
-            font-size: 1.05em;
+            font-size: 1em;
             padding-top: 2px;
         }
 
@@ -96,32 +98,35 @@
             outline: none;
             padding-bottom: 2px;
             font-size: 0.95em;
-            color: var(--text-dark);
+            color: var(--text-muted);
             line-height: 1.5;
-            transition: border-color 0.2s;
+            transition: all 0.2s;
         }
 
         .clue-text:focus { 
-            border-bottom: 1px solid #a1a1aa; 
+            color: var(--text-main);
+            border-bottom: 1px solid var(--text-muted); 
         }
         
         .clue-text:empty::before { 
             content: "Paste clue here..."; 
-            color: var(--text-dim);
+            color: var(--border-subtle);
             font-style: italic;
         }
 
-        /* Crossword Grid */
+        /* Crossword Grid - Crisp White/Black */
         .grid-container {
             display: grid;
             grid-template-columns: repeat(13, 44px);
             grid-template-rows: repeat(13, 44px);
             background-color: var(--black-square);
             border: 4px solid var(--black-square); 
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
             width: fit-content;
             height: fit-content;
             flex-shrink: 0;
+            border-radius: 4px;
+            overflow: hidden;
         }
 
         .cell {
@@ -147,9 +152,9 @@
             border: none;
             background: transparent;
             text-align: center;
-            font-size: 26px;
-            font-weight: 600;
-            color: var(--text-dark);
+            font-size: 24px;
+            font-weight: 700;
+            color: #111; /* Dark text inside the white puzzle squares */
             text-transform: uppercase;
             outline: none;
             padding: 0;
@@ -166,12 +171,12 @@
             top: 3px;
             left: 4px;
             font-size: 11px;
-            color: var(--text-dark);
+            color: #333;
             font-weight: 700;
             pointer-events: none;
         }
 
-        /* Clean, modern buttons */
+        /* Buttons */
         .controls {
             margin-top: 40px;
             display: flex;
@@ -181,24 +186,23 @@
         button {
             background-color: var(--btn-bg);
             color: var(--btn-text);
-            border: 1px solid #555;
-            padding: 10px 20px;
+            border: 1px solid var(--border-subtle);
+            padding: 10px 24px;
             cursor: pointer;
             border-radius: 6px;
             font-size: 14px;
             font-weight: 600;
             letter-spacing: 0.5px;
             transition: all 0.2s ease;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
 
         button:hover { 
             background-color: #3f3f46; 
-            transform: translateY(-1px);
         }
 
         button.danger { 
-            background-color: var(--box-white);
+            background-color: var(--btn-bg);
             color: var(--danger-red);
             border: 1px solid var(--danger-red);
         }
@@ -208,14 +212,14 @@
             color: var(--box-white);
         }
 
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 8px; }
+        /* Custom Scrollbar to match dark theme */
+        ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { 
-            background: #a1a1aa; 
+            background: var(--border-subtle); 
             border-radius: 4px; 
         }
-        ::-webkit-scrollbar-thumb:hover { background: #71717a; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
     </style>
 </head>
@@ -349,11 +353,11 @@
             document.querySelectorAll('.clue-text').forEach(clue => {
                 if (clue.innerText) data.clues[clue.id] = clue.innerText;
             });
-            localStorage.setItem('crossword_v5', JSON.stringify(data));
+            localStorage.setItem('crossword_v6', JSON.stringify(data));
         }
 
         function loadProgress() {
-            const saved = localStorage.getItem('crossword_v5');
+            const saved = localStorage.getItem('crossword_v6');
             if (!saved) return;
             const data = JSON.parse(saved);
             for (const id in data.cells) {
@@ -368,7 +372,7 @@
 
         function resetAll() {
             if (confirm("Clear all answers and clues?")) {
-                localStorage.removeItem('crossword_v5');
+                localStorage.removeItem('crossword_v6');
                 location.reload();
             }
         }
